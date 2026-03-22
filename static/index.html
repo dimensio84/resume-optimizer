@@ -97,6 +97,80 @@ header .inner {
 }
 .pill strong { color: var(--text); }
 
+/* ── Before/After ── */
+.ba-section {
+  margin-bottom: 40px;
+}
+.ba-section h2 {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.ba-section .sub {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+.ba-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 600px) { .ba-grid { grid-template-columns: 1fr; } }
+.ba-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.ba-card-header {
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.ba-card.before .ba-card-header { background: rgba(248,113,113,.1); color: var(--error); border-bottom: 1px solid rgba(248,113,113,.2); }
+.ba-card.after  .ba-card-header { background: var(--primary-dim); color: var(--primary); border-bottom: 1px solid rgba(34,197,94,.2); }
+.ba-card-body {
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #bbb;
+  white-space: pre-wrap;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.ba-card.after .ba-card-body { color: #d8d8d8; }
+.ba-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: var(--primary);
+  padding: 8px 0;
+  grid-column: 1 / -1;
+}
+@media (min-width: 601px) { .ba-arrow { display: none; } }
+.score-badge {
+  display: inline-block;
+  background: var(--primary-dim);
+  color: var(--primary);
+  border: 1px solid rgba(34,197,94,.3);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+.score-badge.bad {
+  background: rgba(248,113,113,.1);
+  color: var(--error);
+  border-color: rgba(248,113,113,.3);
+}
+
 /* ── Form card ── */
 .card {
   background: var(--surface);
@@ -240,6 +314,105 @@ label {
   margin-top: 12px;
   display: none;
 }
+
+/* ── Info sections ── */
+.info-section {
+  margin: 48px 0;
+}
+.info-heading {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  letter-spacing: -.3px;
+}
+.info-body {
+  color: #bbb;
+  font-size: 15px;
+  line-height: 1.75;
+  margin-bottom: 10px;
+}
+.info-body strong { color: var(--text); }
+.info-body em { color: var(--primary); font-style: normal; }
+
+/* Steps */
+.steps-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.step-num {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--primary-dim);
+  border: 1px solid rgba(34,197,94,.3);
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.step strong { display: block; margin-bottom: 4px; font-size: 15px; }
+.step p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+/* ATS stats */
+.ats-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 24px 0;
+}
+@media (max-width: 600px) { .ats-stats { grid-template-columns: 1fr; } }
+.ats-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  text-align: center;
+}
+.ats-stat-number {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.ats-stat-label {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Deliverables */
+.deliverables {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.deliverable {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.deliverable-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.deliverable strong { display: block; margin-bottom: 4px; font-size: 15px; }
+.deliverable p { color: var(--muted); font-size: 14px; line-height: 1.6; }
 
 /* ── Results page ── */
 #results-page { display: none; }
@@ -407,6 +580,62 @@ footer {
       </div>
     </div>
 
+    <!-- Before / After Example -->
+    <div class="ba-section">
+      <h2>See the Difference</h2>
+      <p class="sub">Real example — same candidate, same job, optimized by ResumeChangers</p>
+      <div class="ba-grid">
+
+        <div class="ba-card before">
+          <div class="ba-card-header">Before — Original Resume</div>
+          <div class="ba-card-body">Sarah Johnson
+sarah.j@email.com
+
+WORK HISTORY
+Marketing person at Bright Co. (2020–2024)
+- Did social media posts
+- Helped with emails
+- Made some graphics
+- Attended marketing meetings
+
+Part-time helper at Local Store (2019–2020)
+- Customer service
+
+EDUCATION
+Business degree, City College 2019
+
+SKILLS
+Word, Excel, Instagram, Facebook</div>
+          <div style="padding:0 16px 14px"><span class="score-badge bad">ATS Score: 23/100</span></div>
+        </div>
+
+        <div class="ba-card after">
+          <div class="ba-card-header">After — Optimized by ResumeChangers</div>
+          <div class="ba-card-body">Sarah Johnson
+sarah.j@email.com | LinkedIn: linkedin.com/in/sarahjohnson
+
+PROFESSIONAL EXPERIENCE
+Digital Marketing Specialist — Bright Co. (2020–2024)
+• Managed organic social media strategy across Instagram and Facebook, growing combined following by 34%
+• Executed email marketing campaigns via Mailchimp, achieving 28% open rate (industry avg: 21%)
+• Designed branded graphics using Canva and Adobe Express for 3 product launches
+• Collaborated cross-functionally with sales team to align campaigns with quarterly revenue targets
+
+Customer Experience Associate — Local Store (2019–2020)
+• Delivered front-line customer service, maintaining 4.8/5 satisfaction score
+
+EDUCATION
+B.S. Business Administration — City College, 2019
+
+SKILLS
+Email Marketing · Mailchimp · Social Media Strategy · Content Creation
+Adobe Express · Canva · Meta Ads · Campaign Analytics · Microsoft Office</div>
+          <div style="padding:0 16px 14px"><span class="score-badge">ATS Score: 91/100</span></div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- Resume input -->
     <div class="card">
       <div class="card-title">Your Resume</div>
@@ -445,6 +674,94 @@ footer {
       Optimize My Resume — $7.99
     </button>
     <p class="guarantee">Powered by Claude AI · Secure payment via Stripe</p>
+
+    <!-- How to use -->
+    <div class="info-section">
+      <h2 class="info-heading">How It Works</h2>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <strong>Paste or upload your resume</strong>
+            <p>Copy your existing resume text or upload a PDF. It doesn't need to be perfect — that's what we're here for.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <strong>Add the job description</strong>
+            <p>Paste the full job posting you're applying for — include the requirements, responsibilities, and skills sections.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <strong>Get your optimized package</strong>
+            <p>Our AI analyzes the gap between your resume and the role, then delivers a rewritten resume, cover letter, and ATS score — in under a minute.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- What is ATS -->
+    <div class="info-section">
+      <h2 class="info-heading">What Is an ATS Score — and Why Does It Matter?</h2>
+      <p class="info-body">
+        Most companies use <strong>Applicant Tracking Systems (ATS)</strong> to automatically screen resumes before a human ever reads them. These systems scan your resume for keywords, formatting, and relevance to the job description. If your score is too low, your application is rejected automatically — no matter how qualified you are.
+      </p>
+      <div class="ats-stats">
+        <div class="ats-stat">
+          <div class="ats-stat-number">75%</div>
+          <div class="ats-stat-label">of resumes are rejected by ATS before reaching a hiring manager</div>
+        </div>
+        <div class="ats-stat">
+          <div class="ats-stat-number">3x</div>
+          <div class="ats-stat-label">more likely to get an interview with a keyword-optimized resume</div>
+        </div>
+        <div class="ats-stat">
+          <div class="ats-stat-number">6 sec</div>
+          <div class="ats-stat-label">average time a recruiter spends reading a resume that passes ATS</div>
+        </div>
+      </div>
+      <p class="info-body" style="margin-top:20px">
+        ResumeChangers closes that gap. We identify exactly which keywords and phrases the ATS is looking for in your target job, then rewrite your resume to include them naturally — without fabricating experience. The result is a resume that passes automated screening <em>and</em> impresses the humans reading it.
+      </p>
+    </div>
+
+    <!-- What you get -->
+    <div class="info-section">
+      <h2 class="info-heading">What You Get for $7.99</h2>
+      <div class="deliverables">
+        <div class="deliverable">
+          <div class="deliverable-icon">📊</div>
+          <div>
+            <strong>ATS Compatibility Score</strong>
+            <p>A score out of 100 showing how well your resume matches the job, plus a plain-English explanation of what's holding you back.</p>
+          </div>
+        </div>
+        <div class="deliverable">
+          <div class="deliverable-icon">🔑</div>
+          <div>
+            <strong>Missing Keywords Report</strong>
+            <p>The exact terms the ATS is scanning for that are absent from your current resume — so you know precisely what was added.</p>
+          </div>
+        </div>
+        <div class="deliverable">
+          <div class="deliverable-icon">📝</div>
+          <div>
+            <strong>Fully Rewritten Resume</strong>
+            <p>Your resume rewritten with stronger action verbs, quantified achievements, and the right keyword density for this specific role.</p>
+          </div>
+        </div>
+        <div class="deliverable">
+          <div class="deliverable-icon">✉️</div>
+          <div>
+            <strong>Tailored Cover Letter</strong>
+            <p>A professional, 3-paragraph cover letter written specifically for the company and role — ready to send.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
