@@ -3,9 +3,10 @@ import uuid
 import json
 import io
 
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, Response
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 import anthropic
 import stripe
@@ -353,6 +354,15 @@ JOB DESCRIPTION:
     start = raw.find("{")
     end = raw.rfind("}") + 1
     return json.loads(raw[start:end])
+
+
+# ── 404 handler ───────────────────────────────────────────────────────────────
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        return FileResponse("static/404.html", status_code=404)
+    return Response(str(exc.detail), status_code=exc.status_code)
 
 
 # ── Static files (must be last) ────────────────────────────────────────────────
