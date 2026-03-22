@@ -55,6 +55,13 @@ class SubscribeRequest(BaseModel):
     email: str
 
 
+class EnquiryRequest(BaseModel):
+    name: str
+    email: str
+    topic: str
+    message: str
+
+
 # ── API routes ─────────────────────────────────────────────────────────────────
 
 @app.post("/api/upload-resume")
@@ -186,6 +193,56 @@ async def subscribe(req: SubscribeRequest):
         return {"ok": True}
 
     raise HTTPException(500, "Could not save email — please try again")
+
+
+# ── Enquiry endpoint ──────────────────────────────────────────────────────────
+
+@app.post("/api/enquire")
+async def enquire(req: EnquiryRequest):
+    """Save enquiry to Mailchimp with message stored as a note."""
+    email = req.email.strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(400, "Invalid email address")
+
+    api_key = os.environ.get("MAILCHIMP_API_KEY", "")
+    audience_id = os.environ.get("MAILCHIMP_AUDIENCE_ID", "")
+
+    if not api_key or not audience_id:
+        raise HTTPException(500, "Email service not configured")
+
+    server = api_key.split("-")[-1]
+
+    async with httpx.AsyncClient() as client:
+        # Add/update contact
+        member_res = await client.put(
+            f"https://{server}.api.mailchimp.com/3.0/lists/{audience_id}/members/{_md5(email)}",
+            auth=("anystring", api_key),
+            json={
+                "email_address": email,
+                "status_if_new": "subscribed",
+                "merge_fields": {"FNAME": req.name.split()[0], "LNAME": " ".join(req.name.split()[1:])},
+                "tags": ["enquiry", req.topic],
+            },
+            timeout=10,
+        )
+
+        if member_res.status_code not in (200, 201):
+            raise HTTPException(500, "Could not save enquiry — please try again")
+
+        # Store message as a note on the contact
+        await client.post(
+            f"https://{server}.api.mailchimp.com/3.0/lists/{audience_id}/members/{_md5(email)}/notes",
+            auth=("anystring", api_key),
+            json={"note": f"Topic: {req.topic}\n\n{req.message}"},
+            timeout=10,
+        )
+
+    return {"ok": True}
+
+
+def _md5(email: str) -> str:
+    import hashlib
+    return hashlib.md5(email.encode()).hexdigest()
 
 
 # ── Download endpoints ────────────────────────────────────────────────────────

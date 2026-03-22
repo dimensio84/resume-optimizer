@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enquire for Details — ResumeChangers</title>
+<meta name="description" content="Have a question about ResumeChangers? Get answers to common questions or send us a message. AI-powered resume optimization for $7.99.">
+<link rel="canonical" href="https://www.resumechangers.com/enquire-for-details/">
+<meta property="og:title" content="Enquire for Details — ResumeChangers">
+<meta property="og:url" content="https://www.resumechangers.com/enquire-for-details/">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10865441394"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-10865441394');
+</script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #080808; --surface: #111111; --surface2: #1a1a1a;
+  --border: #272727; --primary: #22c55e; --primary-hover: #16a34a;
+  --primary-dim: rgba(34,197,94,.12); --text: #f0f0f0; --muted: #777;
+  --error: #f87171; --radius: 10px;
+}
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.6; }
+header { border-bottom: 1px solid var(--border); padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; }
+.logo { font-size: 18px; font-weight: 700; color: var(--primary); text-decoration: none; }
+.nav-cta { background: var(--primary); color: #000; font-weight: 700; font-size: 13px; padding: 8px 16px; border-radius: 7px; text-decoration: none; }
+.container { max-width: 720px; margin: 0 auto; padding: 0 20px 80px; }
+
+/* Hero */
+.page-hero { padding: 48px 0 36px; }
+.page-hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 10px; letter-spacing: -.3px; }
+.page-hero p { color: var(--muted); font-size: 16px; max-width: 520px; }
+
+/* FAQ */
+.faq-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+.faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.faq-q { width: 100%; background: none; border: none; color: var(--text); font-family: inherit; font-size: 15px; font-weight: 600; text-align: left; padding: 18px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.faq-q:hover { color: var(--primary); }
+.faq-q .arrow { color: var(--muted); font-size: 18px; transition: transform .2s; flex-shrink: 0; }
+.faq-item.open .faq-q .arrow { transform: rotate(45deg); color: var(--primary); }
+.faq-a { display: none; padding: 0 20px 18px; color: #bbb; font-size: 14px; line-height: 1.7; border-top: 1px solid var(--border); padding-top: 14px; }
+.faq-item.open .faq-a { display: block; }
+
+/* Buy nudge */
+.buy-nudge { background: var(--primary-dim); border: 1px solid rgba(34,197,94,.25); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 40px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.buy-nudge p { color: var(--text); font-size: 15px; margin: 0; }
+.buy-nudge p span { color: var(--muted); font-size: 13px; display: block; margin-top: 4px; }
+.buy-nudge a { background: var(--primary); color: #000; font-weight: 700; font-size: 14px; padding: 11px 22px; border-radius: 8px; text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+.buy-nudge a:hover { background: var(--primary-hover); }
+
+/* Contact form */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+.card-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin-bottom: 20px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.form-group label { font-size: 13px; font-weight: 600; color: var(--muted); }
+input[type="text"], input[type="email"], textarea, select {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-family: inherit; font-size: 14px; padding: 11px 14px;
+  outline: none; transition: border-color .2s; width: 100%;
+}
+input::placeholder, textarea::placeholder { color: var(--muted); }
+input:focus, textarea:focus, select:focus { border-color: var(--primary); }
+textarea { resize: vertical; line-height: 1.6; }
+select { cursor: pointer; }
+select option { background: var(--surface2); }
+.submit-btn {
+  width: 100%; padding: 14px; background: var(--primary); color: #000;
+  font-size: 15px; font-weight: 700; border: none; border-radius: var(--radius);
+  cursor: pointer; transition: background .15s; margin-top: 6px;
+}
+.submit-btn:hover { background: var(--primary-hover); }
+.submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+.error-msg { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3); color: var(--error); border-radius: 8px; padding: 12px 16px; font-size: 14px; margin-top: 12px; display: none; }
+.success-msg { text-align: center; padding: 32px 20px; display: none; }
+.success-msg .icon { font-size: 44px; margin-bottom: 12px; }
+.success-msg h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.success-msg p { color: var(--muted); margin-bottom: 20px; }
+.success-msg a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+footer { border-top: 1px solid var(--border); padding: 24px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+footer a { color: var(--muted); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">ResumeChangers</a>
+  <a class="nav-cta" href="/">Optimize My Resume — $7.99</a>
+</header>
+
+<div class="container">
+
+  <div class="page-hero">
+    <h1>How Can We Help?</h1>
+    <p>Most questions are answered below. If you don't find what you're looking for, send us a message and we'll get back to you.</p>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-list">
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What exactly do I get for $7.99?
+        <span class="arrow">+</span>
+      </button>
+      <div class="faq-a">You get four things: (1) an ATS compatibility score out of 100 with an explanation, (2) a list of missing keywords from the job description, (3) a fully rewritten resume optimized for that specific role, and (4) a tailored cover letter ready to send. All delivered in under a minute.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Is this a subscription or a one-time payment?
+        <span class="arrow">+</span>
+      </button>
+      <div class="faq-a">One-time payment of $7.99. No subscription, no recurring charges. Each optimization is a separate $7.99 purchase — so if you're applying to 5 different roles, you'd pay $7.99 for each tailored optimization.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Will it work for my industry / job type?
+        <span class="arrow">+</span>
+      </button>
+      <div class="faq-a">Yes. ResumeChangers works for any industry and any role — from software engineers to marketing managers to healthcare professionals. The AI tailors the optimization to the specific job description you provide, so the results are always relevant to your target role.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Is my resume data kept private?
+        <span class="arrow">+</span>
+      </button>
+      <div class="faq-a">Yes. Your resume text is used only to generate your analysis and is not permanently stored in a database. It is processed through Anthropic's Claude AI (subject to their privacy policy) and held temporarily in server memory until your results are delivered. See our full <a href="/privacy.html" style="color:var(--primary)">Privacy Policy</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Can I get a refund?
+        <span class="arrow">+</span>
+      </button>
+      <div class="faq-a">Because results are delivered instantly as digital content, all sales are final. However, if you experience a technical issue that prevented you from receiving your results, contact us at support@resumechangers.com and we'll make it right.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        How is this different from free resume checkers?
+        <span class="arrow">+</span>
+      </button>
+      <div class="faq-a">Free tools give you a generic score and a list of tips. ResumeChangers actually rewrites your resume — tailored to the specific job you're applying for, not a generic template. You get a finished, ready-to-use document, not just feedback on what to fix yourself.</div>
+    </div>
+
+  </div>
+
+  <!-- Buy nudge -->
+  <div class="buy-nudge">
+    <p>
+      Ready to get started?
+      <span>Most questions are best answered by just trying it — results in under a minute.</span>
+    </p>
+    <a href="/">Optimize My Resume — $7.99</a>
+  </div>
+
+  <!-- Contact form -->
+  <div class="card">
+    <div class="card-title">Still Have a Question? Send Us a Message</div>
+
+    <div id="form-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="enq-name">Your Name</label>
+          <input type="text" id="enq-name" placeholder="Jane Smith">
+        </div>
+        <div class="form-group">
+          <label for="enq-email">Email Address</label>
+          <input type="email" id="enq-email" placeholder="jane@email.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="enq-topic">Topic</label>
+        <select id="enq-topic">
+          <option value="">Select a topic…</option>
+          <option value="billing">Billing / Payment</option>
+          <option value="technical">Technical Issue</option>
+          <option value="results">Question About My Results</option>
+          <option value="privacy">Privacy / Data</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="enq-message">Your Message</label>
+        <textarea id="enq-message" rows="5" placeholder="Tell us what you'd like to know…"></textarea>
+      </div>
+      <div id="enq-error" class="error-msg"></div>
+      <button class="submit-btn" id="enq-submit" onclick="submitEnquiry()">Send Message</button>
+    </div>
+
+    <div class="success-msg" id="enq-success">
+      <div class="icon">✅</div>
+      <h3>Message received!</h3>
+      <p>We'll get back to you at the email you provided within 1 business day.</p>
+      <a href="/">← Back to ResumeChangers</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <a href="/">ResumeChangers</a> &nbsp;·&nbsp;
+  <a href="/blog/">Blog</a> &nbsp;·&nbsp;
+  <a href="/privacy.html">Privacy Policy</a> &nbsp;·&nbsp;
+  <a href="/terms.html">Terms of Service</a>
+</footer>
+
+<script>
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+async function submitEnquiry() {
+  const name    = document.getElementById('enq-name').value.trim();
+  const email   = document.getElementById('enq-email').value.trim();
+  const topic   = document.getElementById('enq-topic').value;
+  const message = document.getElementById('enq-message').value.trim();
+  const errEl   = document.getElementById('enq-error');
+  const btn     = document.getElementById('enq-submit');
+  errEl.style.display = 'none';
+
+  if (!name)              { showErr('Please enter your name.'); return; }
+  if (!email || !email.includes('@')) { showErr('Please enter a valid email address.'); return; }
+  if (!topic)             { showErr('Please select a topic.'); return; }
+  if (!message)           { showErr('Please enter your message.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  try {
+    const res = await fetch('/api/enquire', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, topic, message }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Something went wrong');
+    document.getElementById('form-content').style.display = 'none';
+    document.getElementById('enq-success').style.display = 'block';
+  } catch (err) {
+    showErr(err.message);
+    btn.disabled = false;
+    btn.textContent = 'Send Message';
+  }
+
+  function showErr(msg) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  }
+}
+</script>
+
+</body>
+</html>
