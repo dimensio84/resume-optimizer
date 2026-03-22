@@ -10,6 +10,7 @@ from pydantic import BaseModel
 import anthropic
 import stripe
 import pdfplumber
+import httpx
 from docx import Document
 from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -47,6 +48,10 @@ class AnalyzeRequest(BaseModel):
 
 class DownloadRequest(BaseModel):
     text: str
+
+
+class SubscribeRequest(BaseModel):
+    email: str
 
 
 # ── API routes ─────────────────────────────────────────────────────────────────
@@ -138,6 +143,48 @@ async def analyze(req: AnalyzeRequest):
     result = _run_claude_analysis(sub["resume_text"], sub["job_description"])
     sub["result"] = result
     return result
+
+
+# ── Email subscribe ───────────────────────────────────────────────────────────
+
+@app.post("/api/subscribe")
+async def subscribe(req: SubscribeRequest):
+    """Add email to Mailchimp audience."""
+    email = req.email.strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(400, "Invalid email address")
+
+    api_key = os.environ.get("MAILCHIMP_API_KEY", "")
+    audience_id = os.environ.get("MAILCHIMP_AUDIENCE_ID", "")
+
+    if not api_key or not audience_id:
+        raise HTTPException(500, "Email service not configured")
+
+    server = api_key.split("-")[-1]
+    url = f"https://{server}.api.mailchimp.com/3.0/lists/{audience_id}/members"
+
+    async with httpx.AsyncClient() as client:
+        res = await client.post(
+            url,
+            auth=("anystring", api_key),
+            json={
+                "email_address": email,
+                "status": "subscribed",
+                "tags": ["exit-popup"],
+            },
+            timeout=10,
+        )
+
+    # 200 = already subscribed (updated), 201 = new subscriber
+    if res.status_code in (200, 201):
+        return {"ok": True}
+
+    body = res.json()
+    # Treat "already subscribed" as success
+    if body.get("title") == "Member Exists":
+        return {"ok": True}
+
+    raise HTTPException(500, "Could not save email — please try again")
 
 
 # ── Download endpoints ────────────────────────────────────────────────────────

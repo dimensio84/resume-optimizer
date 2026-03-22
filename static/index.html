@@ -446,6 +446,104 @@ label {
 .deliverable strong { display: block; margin-bottom: 4px; font-size: 15px; }
 .deliverable p { color: var(--muted); font-size: 14px; line-height: 1.6; }
 
+/* ── Exit-intent popup ── */
+.popup-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(3px);
+}
+.popup-overlay.visible { display: flex; }
+.popup-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 36px 32px;
+  max-width: 440px;
+  width: 100%;
+  position: relative;
+  text-align: center;
+}
+.popup-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+.popup-close:hover { color: var(--text); }
+.popup-icon { font-size: 36px; margin-bottom: 12px; }
+.popup-card h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+.popup-card p { color: var(--muted); font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
+.popup-checklist {
+  text-align: left;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  list-style: none;
+}
+.popup-checklist li {
+  font-size: 13px;
+  color: #ccc;
+  padding: 4px 0;
+  display: flex;
+  gap: 8px;
+}
+.popup-checklist li::before { content: "✓"; color: var(--primary); font-weight: 700; }
+.popup-form { display: flex; flex-direction: column; gap: 10px; }
+.popup-form input[type="email"] {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color .2s;
+}
+.popup-form input[type="email"]:focus { border-color: var(--primary); }
+.popup-submit {
+  width: 100%;
+  padding: 13px;
+  background: var(--primary);
+  color: #000;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.popup-submit:hover { background: var(--primary-hover); }
+.popup-submit:disabled { opacity: .5; cursor: not-allowed; }
+.popup-skip {
+  display: block;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: center;
+}
+.popup-skip:hover { color: var(--text); }
+.popup-success { display: none; }
+.popup-success .popup-icon { font-size: 44px; }
+.popup-success h2 { margin-bottom: 8px; }
+
 /* ── Results page ── */
 #results-page { display: none; }
 
@@ -891,6 +989,41 @@ Adobe Express · Canva · Meta Ads · Campaign Analytics · Microsoft Office</di
   </div>
 </div>
 
+<!-- ══ EXIT-INTENT POPUP ══════════════════════════════════════════════════════ -->
+<div class="popup-overlay" id="exit-popup">
+  <div class="popup-card">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+
+    <!-- Default state -->
+    <div id="popup-default">
+      <div class="popup-icon">🎁</div>
+      <h2>Before you go — grab this free</h2>
+      <p>Get our <strong>Resume Checklist</strong> — 10 things every resume needs to pass ATS screening in 2026. Free, instant, no spam.</p>
+      <ul class="popup-checklist">
+        <li>The 5 formatting rules ATS systems require</li>
+        <li>Which keywords to always include</li>
+        <li>The #1 mistake that gets resumes auto-rejected</li>
+        <li>How to write bullet points that get callbacks</li>
+      </ul>
+      <div class="popup-form">
+        <input type="email" id="popup-email" placeholder="Enter your email address">
+        <button class="popup-submit" id="popup-submit-btn" onclick="submitPopup()">Send Me the Free Checklist</button>
+      </div>
+      <button class="popup-skip" onclick="closePopup()">No thanks, I don't need help with my resume</button>
+      <div id="popup-error" style="color:var(--error);font-size:13px;margin-top:8px;display:none"></div>
+    </div>
+
+    <!-- Success state -->
+    <div class="popup-success" id="popup-success">
+      <div class="popup-icon">✅</div>
+      <h2>You're in!</h2>
+      <p style="color:var(--muted)">Check your inbox — your free checklist is on its way.<br><br>Ready to optimize your resume right now?</p>
+      <a href="#resume-form" class="cta-btn" onclick="closePopup()" style="display:block;text-decoration:none;margin-top:4px">Optimize My Resume — $7.99</a>
+      <button class="popup-skip" onclick="closePopup()">I'll come back later</button>
+    </div>
+  </div>
+</div>
+
 <footer>
   <div class="container">
     ResumeChangers &nbsp;·&nbsp; Powered by Claude AI &nbsp;·&nbsp; Payments by Stripe
@@ -1134,6 +1267,75 @@ async function downloadResume(format, btn) {
   } catch {
     btn.textContent = 'Failed — try again';
     setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+  }
+}
+
+// ── Exit-intent popup ─────────────────────────────────────────────────────────
+(function () {
+  if (sessionId) return; // don't show on results page
+
+  function hasSeenPopup() {
+    return document.cookie.includes('rc_popup=1');
+  }
+  function setPopupCookie() {
+    const d = new Date();
+    d.setTime(d.getTime() + 7 * 24 * 60 * 60 * 1000);
+    document.cookie = 'rc_popup=1; expires=' + d.toUTCString() + '; path=/';
+  }
+
+  let triggered = false;
+  document.addEventListener('mouseleave', function (e) {
+    if (e.clientY <= 0 && !triggered && !hasSeenPopup()) {
+      triggered = true;
+      setPopupCookie();
+      document.getElementById('exit-popup').classList.add('visible');
+    }
+  });
+
+  // Mobile fallback — show after 60s only if user has scrolled (showing engagement)
+  setTimeout(function () {
+    if (!triggered && !hasSeenPopup() && window.scrollY > 300) {
+      triggered = true;
+      setPopupCookie();
+      document.getElementById('exit-popup').classList.add('visible');
+    }
+  }, 60000);
+})();
+
+function closePopup() {
+  document.getElementById('exit-popup').classList.remove('visible');
+}
+
+async function submitPopup() {
+  const email = document.getElementById('popup-email').value.trim();
+  const btn = document.getElementById('popup-submit-btn');
+  const errEl = document.getElementById('popup-error');
+  errEl.style.display = 'none';
+
+  if (!email || !email.includes('@')) {
+    errEl.textContent = 'Please enter a valid email address.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  try {
+    const res = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Something went wrong');
+    document.getElementById('popup-default').style.display = 'none';
+    document.getElementById('popup-success').style.display = 'block';
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Send Me the Free Checklist';
   }
 }
 
