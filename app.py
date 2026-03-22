@@ -5,11 +5,22 @@ import io
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, Response
 from pydantic import BaseModel
 import anthropic
 import stripe
 import pdfplumber
+from docx import Document
+from docx.shared import Pt, Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 
 app = FastAPI(title="ResumeAI")
 
@@ -32,6 +43,10 @@ class CheckoutRequest(BaseModel):
 
 class AnalyzeRequest(BaseModel):
     session_id: str
+
+
+class DownloadRequest(BaseModel):
+    text: str
 
 
 # ── API routes ─────────────────────────────────────────────────────────────────
@@ -123,6 +138,128 @@ async def analyze(req: AnalyzeRequest):
     result = _run_claude_analysis(sub["resume_text"], sub["job_description"])
     sub["result"] = result
     return result
+
+
+# ── Download endpoints ────────────────────────────────────────────────────────
+
+@app.post("/api/download/docx")
+async def download_docx(req: DownloadRequest):
+    """Generate and return an optimized resume as a .docx file."""
+    content = _create_docx(req.text)
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": "attachment; filename=optimized-resume.docx"},
+    )
+
+
+@app.post("/api/download/pdf")
+async def download_pdf(req: DownloadRequest):
+    """Generate and return an optimized resume as a .pdf file."""
+    content = _create_pdf(req.text)
+    return Response(
+        content=content,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=optimized-resume.pdf"},
+    )
+
+
+def _create_docx(text: str) -> bytes:
+    doc = Document()
+    for section in doc.sections:
+        section.top_margin = Inches(1)
+        section.bottom_margin = Inches(1)
+        section.left_margin = Inches(1)
+        section.right_margin = Inches(1)
+
+    normal = doc.styles["Normal"]
+    normal.font.name = "Calibri"
+    normal.font.size = Pt(10.5)
+
+    lines = text.strip().split("\n")
+    is_first = True
+
+    for line in lines:
+        s = line.strip()
+        if not s:
+            doc.add_paragraph("")
+            continue
+
+        if is_first:
+            p = doc.add_paragraph()
+            run = p.add_run(s)
+            run.bold = True
+            run.font.size = Pt(18)
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            is_first = False
+        elif s.isupper() and len(s) < 50:
+            p = doc.add_paragraph()
+            run = p.add_run(s)
+            run.bold = True
+            run.font.size = Pt(11)
+            pPr = p._p.get_or_add_pPr()
+            pBdr = OxmlElement("w:pBdr")
+            bottom = OxmlElement("w:bottom")
+            bottom.set(qn("w:val"), "single")
+            bottom.set(qn("w:sz"), "6")
+            bottom.set(qn("w:space"), "1")
+            bottom.set(qn("w:color"), "888888")
+            pBdr.append(bottom)
+            pPr.append(pBdr)
+        else:
+            doc.add_paragraph(s)
+
+    buf = io.BytesIO()
+    doc.save(buf)
+    buf.seek(0)
+    return buf.read()
+
+
+def _create_pdf(text: str) -> bytes:
+    # Sanitize characters that reportlab's built-in fonts can't handle
+    replacements = {
+        "\u2022": "-", "\u2014": "-", "\u2013": "-",
+        "\u2019": "'", "\u2018": "'", "\u201c": '"', "\u201d": '"',
+        "\u00e9": "e", "\u00e8": "e", "\u00ea": "e",
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    }
+    for char, repl in replacements.items():
+        text = text.replace(char, repl)
+
+    name_style = ParagraphStyle("Name", fontName="Helvetica-Bold", fontSize=18,
+                                alignment=TA_CENTER, spaceAfter=4)
+    header_style = ParagraphStyle("Header", fontName="Helvetica-Bold", fontSize=11,
+                                  spaceBefore=14, spaceAfter=3)
+    body_style = ParagraphStyle("Body", fontName="Helvetica", fontSize=10.5,
+                                leading=15, spaceAfter=2)
+
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=letter,
+                            leftMargin=inch, rightMargin=inch,
+                            topMargin=inch, bottomMargin=inch)
+    story = []
+    lines = text.strip().split("\n")
+    is_first = True
+
+    for line in lines:
+        s = line.strip()
+        if not s:
+            story.append(Spacer(1, 6))
+            continue
+
+        if is_first:
+            story.append(Paragraph(s, name_style))
+            is_first = False
+        elif s.isupper() and len(s) < 50:
+            story.append(Paragraph(s, header_style))
+            story.append(HRFlowable(width="100%", thickness=0.5,
+                                    color=colors.grey, spaceAfter=4))
+        else:
+            story.append(Paragraph(s, body_style))
+
+    doc.build(story)
+    buf.seek(0)
+    return buf.read()
 
 
 # ── Claude analysis ────────────────────────────────────────────────────────────

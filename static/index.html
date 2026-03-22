@@ -588,6 +588,15 @@ footer {
   margin-top: 60px;
 }
 </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10865441394"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10865441394');
+</script>
 </head>
 <body>
 
@@ -857,7 +866,11 @@ Adobe Express · Canva · Meta Ads · Campaign Analytics · Microsoft Office</di
         <div class="card-title">Optimized Resume</div>
         <p style="color:var(--muted);font-size:14px">Fully rewritten with improved keywords, stronger action verbs, and better ATS formatting:</p>
         <div class="content-block" id="optimized-resume"></div>
-        <button class="copy-btn" onclick="copyText('optimized-resume', this)">Copy Resume</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          <button class="copy-btn" onclick="copyText('optimized-resume', this)">Copy Resume</button>
+          <button class="copy-btn download-btn" onclick="downloadResume('docx', this)">Download Word</button>
+          <button class="copy-btn download-btn" onclick="downloadResume('pdf', this)">Download PDF</button>
+        </div>
       </div>
 
       <!-- Cover Letter -->
@@ -1091,6 +1104,37 @@ function animateNumber(id, target, duration) {
     if (pct < 1) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
+}
+
+// ── Download resume ───────────────────────────────────────────────────────────
+async function downloadResume(format, btn) {
+  const text = document.getElementById('optimized-resume').textContent;
+  const orig = btn.textContent;
+  btn.textContent = 'Generating…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`/api/download/${format}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) throw new Error('Download failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = format === 'docx' ? 'optimized-resume.docx' : 'optimized-resume.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    btn.textContent = 'Downloaded!';
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+  } catch {
+    btn.textContent = 'Failed — try again';
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+  }
 }
 
 // ── Copy to clipboard ─────────────────────────────────────────────────────────
