@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeAI — Get More Interviews</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080808;
+  --surface: #111111;
+  --surface2: #1a1a1a;
+  --border: #272727;
+  --primary: #22c55e;
+  --primary-hover: #16a34a;
+  --primary-dim: rgba(34,197,94,.12);
+  --text: #f0f0f0;
+  --muted: #777;
+  --error: #f87171;
+  --radius: 10px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── Layout ── */
+.container { max-width: 780px; margin: 0 auto; padding: 0 20px; }
+
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 18px 0;
+}
+header .inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.logo {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -.3px;
+}
+.badge {
+  background: var(--primary-dim);
+  color: var(--primary);
+  border: 1px solid rgba(34,197,94,.3);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── Hero ── */
+.hero {
+  text-align: center;
+  padding: 56px 0 40px;
+}
+.hero h1 {
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 800;
+  letter-spacing: -.5px;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+.hero h1 span { color: var(--primary); }
+.hero p {
+  color: var(--muted);
+  font-size: 17px;
+  max-width: 500px;
+  margin: 0 auto 24px;
+}
+.value-pills {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 0;
+}
+.pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.pill strong { color: var(--text); }
+
+/* ── Form card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 14px;
+  width: fit-content;
+}
+.tab {
+  padding: 7px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  transition: all .15s;
+}
+.tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+
+/* Upload zone */
+.upload-zone {
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--primary);
+  background: var(--primary-dim);
+}
+.upload-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+.upload-icon { font-size: 28px; margin-bottom: 8px; }
+.upload-zone p { color: var(--muted); font-size: 14px; }
+.upload-zone p strong { color: var(--text); }
+.upload-status {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--primary);
+  display: none;
+}
+
+/* Textarea */
+textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 12px 14px;
+  resize: vertical;
+  transition: border-color .2s;
+  outline: none;
+}
+textarea::placeholder { color: var(--muted); }
+textarea:focus { border-color: var(--primary); }
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+/* CTA Button */
+.cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  background: var(--primary);
+  color: #000;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  margin-top: 8px;
+}
+.cta-btn:hover { background: var(--primary-hover); }
+.cta-btn:active { transform: scale(.99); }
+.cta-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.cta-btn .lock { font-size: 14px; }
+
+.guarantee {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+/* Error */
+.error-msg {
+  background: rgba(248,113,113,.1);
+  border: 1px solid rgba(248,113,113,.3);
+  color: var(--error);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  margin-top: 12px;
+  display: none;
+}
+
+/* ── Results page ── */
+#results-page { display: none; }
+
+.results-hero {
+  text-align: center;
+  padding: 48px 0 32px;
+}
+.results-hero h2 {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.results-hero p { color: var(--muted); }
+
+/* Score circle */
+.score-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 24px 0;
+}
+.score-ring { position: relative; width: 130px; height: 130px; }
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring .track { fill: none; stroke: var(--border); stroke-width: 10; }
+.score-ring .fill  { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1.2s ease; }
+.score-number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+.score-number span { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+.score-label {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  max-width: 400px;
+}
+
+/* Keyword chips */
+.keyword-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.kw-chip {
+  background: rgba(248,113,113,.1);
+  border: 1px solid rgba(248,113,113,.25);
+  color: var(--error);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Improvements list */
+.improvements-list {
+  list-style: none;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.improvements-list li {
+  display: flex;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.improvements-list li::before {
+  content: "→";
+  color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Content blocks (resume / cover letter) */
+.content-block {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  white-space: pre-wrap;
+  font-size: 13.5px;
+  line-height: 1.7;
+  max-height: 380px;
+  overflow-y: auto;
+  color: #d0d0d0;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.copy-btn:hover { border-color: var(--primary); background: var(--primary-dim); }
+.copy-btn.copied { border-color: var(--primary); color: var(--primary); }
+
+/* Loading skeleton */
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-state p { color: var(--muted); font-size: 15px; }
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 60px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <div class="logo">ResumeAI</div>
+    <div class="badge">$7.99 one-time</div>
+  </div>
+</header>
+
+<!-- ══ FORM PAGE ══════════════════════════════════════════════════════════════ -->
+<div id="form-page">
+  <div class="container">
+
+    <div class="hero">
+      <h1>Land More Interviews<br>with <span>AI-Optimized</span> Resumes</h1>
+      <p>Paste your resume and job description. Get an ATS score, rewritten resume, and cover letter in under a minute.</p>
+      <div class="value-pills">
+        <div class="pill"><strong>ATS Score</strong> — see how you rank</div>
+        <div class="pill"><strong>Optimized Resume</strong> — keyword-matched</div>
+        <div class="pill"><strong>Cover Letter</strong> — tailored to the role</div>
+      </div>
+    </div>
+
+    <!-- Resume input -->
+    <div class="card">
+      <div class="card-title">Your Resume</div>
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('paste')">Paste Text</button>
+        <button class="tab" onclick="switchTab('upload')">Upload PDF</button>
+      </div>
+
+      <!-- Paste tab -->
+      <div id="tab-paste">
+        <textarea id="resume-text" rows="10" placeholder="Paste your full resume here..."></textarea>
+      </div>
+
+      <!-- Upload tab -->
+      <div id="tab-upload" style="display:none">
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="pdf-input" accept=".pdf">
+          <div class="upload-icon">📄</div>
+          <p><strong>Click to upload</strong> or drag & drop</p>
+          <p>PDF only · max 5 MB</p>
+          <div class="upload-status" id="upload-status"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job description -->
+    <div class="card">
+      <div class="card-title">Job Description</div>
+      <textarea id="job-desc" rows="8" placeholder="Paste the full job description here — include requirements, responsibilities, and skills..."></textarea>
+    </div>
+
+    <div id="error-msg" class="error-msg"></div>
+
+    <button class="cta-btn" id="checkout-btn" onclick="startCheckout()">
+      <span class="lock">🔒</span>
+      Optimize My Resume — $7.99
+    </button>
+    <p class="guarantee">Powered by Claude AI · Secure payment via Stripe</p>
+
+  </div>
+</div>
+
+<!-- ══ RESULTS PAGE ═══════════════════════════════════════════════════════════ -->
+<div id="results-page">
+  <div class="container">
+
+    <!-- Loading state -->
+    <div id="loading-state" class="loading-state">
+      <div class="spinner"></div>
+      <p>Analyzing your resume with Claude AI…</p>
+    </div>
+
+    <!-- Actual results (hidden until loaded) -->
+    <div id="results-content" style="display:none">
+
+      <div class="results-hero">
+        <h2>Your Resume Analysis</h2>
+        <p>Here's everything you need to get more interviews</p>
+      </div>
+
+      <!-- ATS Score -->
+      <div class="card">
+        <div class="card-title">ATS Compatibility Score</div>
+        <div class="score-wrap">
+          <div class="score-ring">
+            <svg viewBox="0 0 130 130" width="130" height="130">
+              <circle class="track" cx="65" cy="65" r="55"/>
+              <circle class="fill" id="score-circle" cx="65" cy="65" r="55"
+                stroke-dasharray="345.4"
+                stroke-dashoffset="345.4"/>
+            </svg>
+            <div class="score-number">
+              <span id="score-value">0</span>
+              <span>/100</span>
+            </div>
+          </div>
+          <p class="score-label" id="score-explanation"></p>
+        </div>
+      </div>
+
+      <!-- Missing Keywords -->
+      <div class="card">
+        <div class="card-title">Missing Keywords</div>
+        <p style="color:var(--muted);font-size:14px">These important terms from the job description are absent from your current resume:</p>
+        <div class="keyword-list" id="keyword-list"></div>
+      </div>
+
+      <!-- Improvements -->
+      <div class="card">
+        <div class="card-title">Key Improvements Made</div>
+        <ul class="improvements-list" id="improvements-list"></ul>
+      </div>
+
+      <!-- Optimized Resume -->
+      <div class="card">
+        <div class="card-title">Optimized Resume</div>
+        <p style="color:var(--muted);font-size:14px">Fully rewritten with improved keywords, stronger action verbs, and better ATS formatting:</p>
+        <div class="content-block" id="optimized-resume"></div>
+        <button class="copy-btn" onclick="copyText('optimized-resume', this)">Copy Resume</button>
+      </div>
+
+      <!-- Cover Letter -->
+      <div class="card">
+        <div class="card-title">Tailored Cover Letter</div>
+        <p style="color:var(--muted);font-size:14px">Written specifically for this role and company:</p>
+        <div class="content-block" id="cover-letter"></div>
+        <button class="copy-btn" onclick="copyText('cover-letter', this)">Copy Cover Letter</button>
+      </div>
+
+      <div style="text-align:center;padding:32px 0 8px">
+        <a href="/" style="color:var(--primary);text-decoration:none;font-size:14px">← Optimize another resume</a>
+      </div>
+
+    </div><!-- /results-content -->
+
+    <div id="results-error" class="error-msg" style="margin-top:40px"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    ResumeAI &nbsp;·&nbsp; Powered by Claude AI &nbsp;·&nbsp; Payments by Stripe
+  </div>
+</footer>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let resumeText = "";
+let activeTab = "paste";
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  event.target.classList.add("active");
+  document.getElementById("tab-paste").style.display = tab === "paste" ? "" : "none";
+  document.getElementById("tab-upload").style.display = tab === "upload" ? "" : "none";
+}
+
+// ── PDF Upload ────────────────────────────────────────────────────────────────
+const pdfInput = document.getElementById("pdf-input");
+const uploadZone = document.getElementById("upload-zone");
+const uploadStatus = document.getElementById("upload-status");
+
+pdfInput.addEventListener("change", handlePdfSelect);
+
+uploadZone.addEventListener("dragover", e => {
+  e.preventDefault();
+  uploadZone.classList.add("drag-over");
+});
+uploadZone.addEventListener("dragleave", () => uploadZone.classList.remove("drag-over"));
+uploadZone.addEventListener("drop", e => {
+  e.preventDefault();
+  uploadZone.classList.remove("drag-over");
+  const file = e.dataTransfer.files[0];
+  if (file) processPdf(file);
+});
+
+async function handlePdfSelect(e) {
+  const file = e.target.files[0];
+  if (file) processPdf(file);
+}
+
+async function processPdf(file) {
+  if (!file.name.toLowerCase().endsWith(".pdf")) {
+    showUploadStatus("Only PDF files are supported", true);
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showUploadStatus("File too large (max 5 MB)", true);
+    return;
+  }
+  showUploadStatus("Extracting text from PDF…");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await fetch("/api/upload-resume", { method: "POST", body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Upload failed");
+    resumeText = data.text;
+    showUploadStatus(`✓ Extracted ${resumeText.split(/\s+/).length} words from ${file.name}`);
+  } catch (err) {
+    showUploadStatus(err.message, true);
+  }
+}
+
+function showUploadStatus(msg, isError = false) {
+  uploadStatus.style.display = "block";
+  uploadStatus.style.color = isError ? "var(--error)" : "var(--primary)";
+  uploadStatus.textContent = msg;
+}
+
+// ── Checkout ──────────────────────────────────────────────────────────────────
+async function startCheckout() {
+  const btn = document.getElementById("checkout-btn");
+  const errEl = document.getElementById("error-msg");
+  errEl.style.display = "none";
+
+  // Get resume text
+  let resume = "";
+  if (activeTab === "paste") {
+    resume = document.getElementById("resume-text").value.trim();
+  } else {
+    resume = resumeText.trim();
+  }
+
+  const jobDesc = document.getElementById("job-desc").value.trim();
+
+  if (!resume) {
+    showFormError(activeTab === "paste" ? "Please paste your resume text." : "Please upload a PDF resume first.");
+    return;
+  }
+  if (!jobDesc) {
+    showFormError("Please paste the job description.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0"></div> Redirecting to payment…';
+
+  try {
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resume_text: resume, job_description: jobDesc }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Could not create checkout session");
+    window.location.href = data.url;
+  } catch (err) {
+    showFormError(err.message);
+    btn.disabled = false;
+    btn.innerHTML = '<span class="lock">🔒</span> Optimize My Resume — $7.99';
+  }
+}
+
+function showFormError(msg) {
+  const el = document.getElementById("error-msg");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+// ── Results ───────────────────────────────────────────────────────────────────
+const sessionId = new URLSearchParams(window.location.search).get("session_id");
+
+if (sessionId) {
+  document.getElementById("form-page").style.display = "none";
+  document.getElementById("results-page").style.display = "block";
+  loadResults(sessionId);
+}
+
+async function loadResults(sessionId) {
+  try {
+    const res = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Analysis failed");
+    renderResults(data);
+  } catch (err) {
+    document.getElementById("loading-state").style.display = "none";
+    const errEl = document.getElementById("results-error");
+    errEl.textContent = err.message;
+    errEl.style.display = "block";
+  }
+}
+
+function renderResults(data) {
+  document.getElementById("loading-state").style.display = "none";
+  document.getElementById("results-content").style.display = "block";
+
+  // Score ring
+  const score = Math.min(100, Math.max(0, data.ats_score || 0));
+  const circumference = 345.4;
+  const offset = circumference - (score / 100) * circumference;
+  const color = score >= 75 ? "#22c55e" : score >= 50 ? "#f59e0b" : "#f87171";
+
+  const circle = document.getElementById("score-circle");
+  circle.style.stroke = color;
+  setTimeout(() => { circle.style.strokeDashoffset = offset; }, 50);
+
+  // Animate score number
+  animateNumber("score-value", score, 1200);
+  document.getElementById("score-explanation").textContent = data.score_explanation || "";
+
+  // Keywords
+  const kwList = document.getElementById("keyword-list");
+  (data.missing_keywords || []).forEach(kw => {
+    const chip = document.createElement("span");
+    chip.className = "kw-chip";
+    chip.textContent = kw;
+    kwList.appendChild(chip);
+  });
+  if (!data.missing_keywords || data.missing_keywords.length === 0) {
+    kwList.innerHTML = '<span style="color:var(--primary);font-size:14px">No major missing keywords — great job!</span>';
+  }
+
+  // Improvements
+  const impList = document.getElementById("improvements-list");
+  (data.improvements || []).forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    impList.appendChild(li);
+  });
+
+  // Resume & cover letter
+  document.getElementById("optimized-resume").textContent = data.optimized_resume || "";
+  document.getElementById("cover-letter").textContent = data.cover_letter || "";
+}
+
+function animateNumber(id, target, duration) {
+  const el = document.getElementById(id);
+  const start = performance.now();
+  function tick(now) {
+    const pct = Math.min(1, (now - start) / duration);
+    el.textContent = Math.round(pct * target);
+    if (pct < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── Copy to clipboard ─────────────────────────────────────────────────────────
+async function copyText(blockId, btn) {
+  const text = document.getElementById(blockId).textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = "Copied!";
+    btn.classList.add("copied");
+    setTimeout(() => {
+      btn.textContent = blockId === "optimized-resume" ? "Copy Resume" : "Copy Cover Letter";
+      btn.classList.remove("copied");
+    }, 2000);
+  } catch {
+    btn.textContent = "Failed to copy";
+  }
+}
+</script>
+
+</body>
+</html>

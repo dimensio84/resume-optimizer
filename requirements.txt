@@ -1,0 +1,6 @@
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+anthropic==0.40.0
+stripe==11.3.0
+pdfplumber==0.11.4
+python-multipart==0.0.20
