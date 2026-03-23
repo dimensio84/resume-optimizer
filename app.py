@@ -121,7 +121,7 @@ async def create_checkout(req: CheckoutRequest):
             cancel_url=f"{BASE_URL}/",
             metadata={"submission_id": submission_id},
         )
-    except stripe.error.StripeError as e:
+    except stripe.StripeError as e:
         raise HTTPException(500, f"Stripe error: {e.user_message}")
 
     return {"url": session.url}
@@ -132,7 +132,7 @@ async def analyze(req: AnalyzeRequest):
     """Verify payment then run Claude analysis. Results are cached per submission."""
     try:
         session = stripe.checkout.Session.retrieve(req.session_id)
-    except stripe.error.InvalidRequestError:
+    except stripe.InvalidRequestError:
         raise HTTPException(400, "Invalid session ID")
 
     if session.payment_status != "paid":
