@@ -660,6 +660,56 @@ label {
 .copy-btn:hover { border-color: var(--primary); background: var(--primary-dim); }
 .copy-btn.copied { border-color: var(--primary); color: var(--primary); }
 
+/* Coupon */
+.coupon-toggle {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 4px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.coupon-toggle:hover { color: var(--primary); }
+.coupon-row {
+  display: none;
+  gap: 8px;
+  margin-top: 10px;
+  align-items: center;
+}
+.coupon-row.open { display: flex; }
+.coupon-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.coupon-row input:focus { outline: none; border-color: var(--primary); }
+.coupon-apply-btn {
+  padding: 10px 16px;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  background: var(--primary-dim);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.coupon-apply-btn:hover { background: var(--primary); color: #fff; }
+.coupon-feedback {
+  font-size: 13px;
+  margin-top: 6px;
+  min-height: 18px;
+}
+
 /* Loading skeleton */
 .loading-state {
   text-align: center;
@@ -676,6 +726,36 @@ label {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-state p { color: var(--muted); font-size: 15px; }
+.progress-wrap {
+  margin: 24px auto 0;
+  max-width: 360px;
+}
+.progress-bar-bg {
+  background: var(--border);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+  width: 0%;
+  transition: width 0.6s ease;
+}
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.progress-step {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 12px;
+  min-height: 20px;
+}
 
 footer {
   border-top: 1px solid var(--border);
@@ -811,9 +891,21 @@ Adobe Express · Canva · Meta Ads · Campaign Analytics · Microsoft Office</di
 
     <div id="error-msg" class="error-msg"></div>
 
+    <!-- Coupon code -->
+    <div style="margin-bottom:12px">
+      <button class="coupon-toggle" type="button" onclick="toggleCoupon()">Have a coupon code?</button>
+      <div class="coupon-row" id="coupon-row">
+        <input type="text" id="coupon-input" placeholder="ENTER CODE" maxlength="30"
+               oninput="this.value=this.value.toUpperCase()"
+               onkeydown="if(event.key==='Enter') applyCoupon()">
+        <button class="coupon-apply-btn" onclick="applyCoupon()">Apply</button>
+      </div>
+      <div class="coupon-feedback" id="coupon-feedback"></div>
+    </div>
+
     <button class="cta-btn" id="checkout-btn" onclick="startCheckout()">
       <span class="lock">🔒</span>
-      Optimize My Resume — $7.99
+      <span id="checkout-btn-label">Optimize My Resume — $7.99</span>
     </button>
     <p class="guarantee">Powered by Claude AI · Secure payment via Stripe</p>
 
@@ -916,6 +1008,15 @@ Adobe Express · Canva · Meta Ads · Campaign Analytics · Microsoft Office</di
     <div id="loading-state" class="loading-state">
       <div class="spinner"></div>
       <p>Analyzing your resume with Claude AI…</p>
+      <div class="progress-wrap">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-label">
+          <span id="progress-step-text">Verifying payment…</span>
+          <span id="progress-pct">0%</span>
+        </div>
+      </div>
     </div>
 
     <!-- Actual results (hidden until loaded) -->
@@ -1108,6 +1209,48 @@ function showUploadStatus(msg, isError = false) {
   uploadStatus.textContent = msg;
 }
 
+// ── Coupon ────────────────────────────────────────────────────────────────────
+let appliedCoupon = null; // null | { code, type, label }
+
+function toggleCoupon() {
+  const row = document.getElementById("coupon-row");
+  row.classList.toggle("open");
+  if (row.classList.contains("open")) document.getElementById("coupon-input").focus();
+}
+
+async function applyCoupon() {
+  const code = document.getElementById("coupon-input").value.trim().toUpperCase();
+  const fb = document.getElementById("coupon-feedback");
+  if (!code) { fb.style.color = "var(--error)"; fb.textContent = "Please enter a coupon code."; return; }
+
+  fb.style.color = "var(--muted)"; fb.textContent = "Checking…";
+
+  try {
+    const res = await fetch("/api/validate-coupon", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ coupon_code: code }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Invalid coupon");
+
+    appliedCoupon = { code, type: data.type, label: data.label };
+    fb.style.color = "var(--primary)";
+    fb.textContent = "Coupon applied: " + data.label;
+
+    const btnLabel = document.getElementById("checkout-btn-label");
+    if (data.type === "free") {
+      btnLabel.textContent = "Optimize My Resume — FREE";
+    } else {
+      btnLabel.textContent = "Optimize My Resume — " + data.label.split("— ")[1];
+    }
+  } catch (err) {
+    appliedCoupon = null;
+    fb.style.color = "var(--error)";
+    fb.textContent = err.message;
+  }
+}
+
 // ── Checkout ──────────────────────────────────────────────────────────────────
 async function startCheckout() {
   const btn = document.getElementById("checkout-btn");
@@ -1134,21 +1277,34 @@ async function startCheckout() {
   }
 
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0"></div> Redirecting to payment…';
+  const isFree = appliedCoupon && appliedCoupon.type === "free";
+  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0"></div> ' +
+    (isFree ? "Processing…" : "Redirecting to payment…");
 
   try {
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ resume_text: resume, job_description: jobDesc }),
+      body: JSON.stringify({
+        resume_text: resume,
+        job_description: jobDesc,
+        coupon_code: appliedCoupon ? appliedCoupon.code : "",
+      }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Could not create checkout session");
-    window.location.href = data.url;
+
+    if (data.free) {
+      // Free coupon — skip Stripe, go straight to results
+      window.location.href = "/?submission_id=" + data.submission_id;
+    } else {
+      window.location.href = data.url;
+    }
   } catch (err) {
     showFormError(err.message);
     btn.disabled = false;
-    btn.innerHTML = '<span class="lock">🔒</span> Optimize My Resume — $7.99';
+    btn.innerHTML = '<span class="lock">🔒</span><span id="checkout-btn-label">Optimize My Resume — $7.99</span>';
+    appliedCoupon = null;
   }
 }
 
@@ -1159,24 +1315,57 @@ function showFormError(msg) {
 }
 
 // ── Results ───────────────────────────────────────────────────────────────────
-const sessionId = new URLSearchParams(window.location.search).get("session_id");
+const _params = new URLSearchParams(window.location.search);
+const sessionId = _params.get("session_id");
+const submissionId = _params.get("submission_id");
 
-if (sessionId) {
+if (sessionId || submissionId) {
   document.getElementById("form-page").style.display = "none";
   document.getElementById("results-page").style.display = "block";
-  loadResults(sessionId);
+  loadResults(sessionId, submissionId);
 }
 
-async function loadResults(sessionId) {
+async function loadResults(sessionId, submissionId) {
+  // Animate progress bar while the API call runs
+  const steps = [
+    { pct: 10, label: submissionId ? "Authorizing coupon…" : "Verifying payment…" },
+    { pct: 25, label: "Reviewing your resume…" },
+    { pct: 45, label: "Analyzing keyword gaps…" },
+    { pct: 65, label: "Rewriting your resume…" },
+    { pct: 82, label: "Writing your cover letter…" },
+    { pct: 92, label: "Finalizing results…" },
+  ];
+  const fill = document.getElementById("progress-fill");
+  const pctEl = document.getElementById("progress-pct");
+  const stepEl = document.getElementById("progress-step-text");
+
+  let stepIndex = 0;
+  function advanceProgress() {
+    if (stepIndex >= steps.length) return;
+    const { pct, label } = steps[stepIndex++];
+    fill.style.width = pct + "%";
+    pctEl.textContent = pct + "%";
+    stepEl.textContent = label;
+    const delay = stepIndex < steps.length ? 3000 + Math.random() * 1500 : 0;
+    if (stepIndex < steps.length) setTimeout(advanceProgress, delay);
+  }
+  advanceProgress();
+
   try {
+    const body = submissionId ? { submission_id: submissionId } : { session_id: sessionId };
     const res = await fetch("/api/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId }),
+      body: JSON.stringify(body),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Analysis failed");
-    renderResults(data);
+
+    // Jump to 100% before rendering
+    fill.style.width = "100%";
+    pctEl.textContent = "100%";
+    stepEl.textContent = "Done!";
+    setTimeout(() => renderResults(data), 400);
   } catch (err) {
     document.getElementById("loading-state").style.display = "none";
     const errEl = document.getElementById("results-error");

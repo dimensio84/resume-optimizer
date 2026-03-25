@@ -35,16 +35,22 @@ claude = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
 PRICE_CENTS = int(os.environ.get("PRICE_CENTS", "799"))  # $7.99
 
+# Coupon codes — set via env vars as comma-separated lists
+_FREE_CODES = {c.strip().upper() for c in os.environ.get("FREE_COUPON_CODES", "").split(",") if c.strip()}
+_HALF_CODES = {c.strip().upper() for c in os.environ.get("HALF_PRICE_COUPON_CODES", "").split(",") if c.strip()}
+
 
 # ── Models ─────────────────────────────────────────────────────────────────────
 
 class CheckoutRequest(BaseModel):
     resume_text: str
     job_description: str
+    coupon_code: str = ""
 
 
 class AnalyzeRequest(BaseModel):
-    session_id: str
+    session_id: str = ""
+    submission_id: str = ""
 
 
 class DownloadRequest(BaseModel):
@@ -85,15 +91,43 @@ async def upload_resume(file: UploadFile = File(...)):
         raise HTTPException(400, f"Failed to parse PDF: {e}")
 
 
+@app.post("/api/validate-coupon")
+async def validate_coupon(req: dict):
+    """Check whether a coupon code is valid and return its discount type."""
+    code = str(req.get("coupon_code", "")).strip().upper()
+    if not code:
+        raise HTTPException(400, "No coupon code provided")
+    if code in _FREE_CODES:
+        return {"valid": True, "type": "free", "label": "100% off — Free!"}
+    if code in _HALF_CODES:
+        return {"valid": True, "type": "half", "label": "50% off — $" + f"{PRICE_CENTS / 2 / 100:.2f}"}
+    raise HTTPException(404, "Invalid coupon code")
+
+
 @app.post("/api/checkout")
 async def create_checkout(req: CheckoutRequest):
-    """Store submission data and create a Stripe Checkout session."""
+    """Store submission data and create a Stripe Checkout session (or bypass for free coupons)."""
     if not req.resume_text.strip():
         raise HTTPException(400, "Resume text is required")
     if not req.job_description.strip():
         raise HTTPException(400, "Job description is required")
 
     submission_id = str(uuid.uuid4())
+    code = req.coupon_code.strip().upper()
+
+    # Free coupon — skip Stripe entirely
+    if code and code in _FREE_CODES:
+        submissions[submission_id] = {
+            "resume_text": req.resume_text,
+            "job_description": req.job_description,
+            "result": None,
+            "paid_by_coupon": True,
+        }
+        return {"free": True, "submission_id": submission_id}
+
+    # 50% coupon — adjust price
+    price = PRICE_CENTS // 2 if (code and code in _HALF_CODES) else PRICE_CENTS
+
     submissions[submission_id] = {
         "resume_text": req.resume_text,
         "job_description": req.job_description,
@@ -111,7 +145,7 @@ async def create_checkout(req: CheckoutRequest):
                             "name": "AI Resume Optimizer",
                             "description": "ATS score · optimized resume · tailored cover letter",
                         },
-                        "unit_amount": PRICE_CENTS,
+                        "unit_amount": price,
                     },
                     "quantity": 1,
                 }
@@ -130,19 +164,29 @@ async def create_checkout(req: CheckoutRequest):
 @app.post("/api/analyze")
 async def analyze(req: AnalyzeRequest):
     """Verify payment then run Claude analysis. Results are cached per submission."""
-    try:
-        session = stripe.checkout.Session.retrieve(req.session_id)
-    except stripe.InvalidRequestError:
-        raise HTTPException(400, "Invalid session ID")
+    if req.submission_id:
+        # Coupon / free path
+        sub = submissions.get(req.submission_id)
+        if not sub:
+            raise HTTPException(404, "Submission not found — it may have expired. Please start over.")
+        if not sub.get("paid_by_coupon"):
+            raise HTTPException(403, "This submission has not been authorized.")
+    elif req.session_id:
+        # Stripe path
+        try:
+            session = stripe.checkout.Session.retrieve(req.session_id)
+        except stripe.InvalidRequestError:
+            raise HTTPException(400, "Invalid session ID")
 
-    if session.payment_status != "paid":
-        raise HTTPException(402, "Payment not completed")
+        if session.payment_status != "paid":
+            raise HTTPException(402, "Payment not completed")
 
-    submission_id = session.metadata.get("submission_id")
-    if not submission_id or submission_id not in submissions:
-        raise HTTPException(404, "Submission not found — it may have expired. Please start over.")
-
-    sub = submissions[submission_id]
+        submission_id = session.metadata.get("submission_id")
+        if not submission_id or submission_id not in submissions:
+            raise HTTPException(404, "Submission not found — it may have expired. Please start over.")
+        sub = submissions[submission_id]
+    else:
+        raise HTTPException(400, "session_id or submission_id is required")
 
     # Return cached result on repeated calls (e.g., page refresh)
     if sub["result"]:
