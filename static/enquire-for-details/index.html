@@ -245,8 +245,9 @@ async function submitEnquiry() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, topic, message }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Something went wrong');
+    const contentType = res.headers.get('content-type') || '';
+    const data = contentType.includes('application/json') ? await res.json() : {};
+    if (!res.ok) throw new Error(data.detail || `Server error (${res.status}) — please try again`);
     document.getElementById('form-content').style.display = 'none';
     document.getElementById('enq-success').style.display = 'block';
   } catch (err) {
