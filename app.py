@@ -213,27 +213,20 @@ async def subscribe(req: SubscribeRequest):
         raise HTTPException(500, "Email service not configured")
 
     server = api_key.split("-")[-1]
-    url = f"https://{server}.api.mailchimp.com/3.0/lists/{audience_id}/members"
 
     async with httpx.AsyncClient() as client:
-        res = await client.post(
-            url,
+        res = await client.put(
+            f"https://{server}.api.mailchimp.com/3.0/lists/{audience_id}/members/{_md5(email)}",
             auth=("anystring", api_key),
             json={
                 "email_address": email,
-                "status": "subscribed",
+                "status_if_new": "subscribed",
                 "tags": ["exit-popup"],
             },
             timeout=10,
         )
 
-    # 200 = already subscribed (updated), 201 = new subscriber
     if res.status_code in (200, 201):
-        return {"ok": True}
-
-    body = res.json()
-    # Treat "already subscribed" as success
-    if body.get("title") == "Member Exists":
         return {"ok": True}
 
     raise HTTPException(500, "Could not save email — please try again")
